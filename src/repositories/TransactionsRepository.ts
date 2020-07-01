@@ -22,28 +22,18 @@ class TransactionsRepository {
   }
 
   public all(): Response {
-    const incomes = this.transactions.filter(item => item.type === 'income');
-    const outcomes = this.transactions.filter(item => item.type === 'outcome');
+    const normalize = { income: 0, outcome: 0, total: 0 };
 
-    const totalIncome =
-      incomes.length > 0
-        ? incomes.map(item => item.value).reduce((accum, curr) => accum + curr)
-        : 0;
-
-    const totalOutcome =
-      outcomes.length > 0
-        ? outcomes.map(item => item.value).reduce((accum, curr) => accum + curr)
-        : 0;
-
-    const a = this.transactions.reduce((acc, curr) => {
-      return acc.value + curr.value;
+    this.transactions.forEach(dataItem => {
+      if (dataItem.type === 'income') {
+        normalize.income += dataItem.value;
+      } else if (dataItem.type === 'outcome') {
+        normalize.outcome += dataItem.value;
+      }
     });
-
-    const total = totalIncome - totalOutcome;
+    normalize.total = normalize.income - normalize.outcome;
     const balance = this.getBalance({
-      income: totalIncome,
-      outcome: totalOutcome,
-      total,
+      ...normalize,
     });
 
     const response = {
